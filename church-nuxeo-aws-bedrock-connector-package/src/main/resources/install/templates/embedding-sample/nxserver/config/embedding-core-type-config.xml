@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component name="org.nuxeo.labs.aws.bedrock.sample.core" version="1.0.0">
 
-    <require>org.nuxeo.ecm.platform.picture.coreTypes</require>
+      <require>studio.extensions.psd-global-csp-lds-churc</require>
 
     <extension target="org.nuxeo.ecm.core.schema.TypeService" point="schema">
         <schema name="embedding" prefix="embedding" override="true" src="schemas/embedding.xsd"/>
@@ -12,7 +12,7 @@
             <schema name="embedding"/>
         </facet>
 
-        <doctype name="Picture" append="true">
+        <doctype name="Asset" append="true">
             <facet name="Embedding"/>
         </doctype>
     </extension>
