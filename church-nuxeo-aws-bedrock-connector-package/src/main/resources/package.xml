@@ -1,5 +1,5 @@
 <!-- See documentation at http://doc.nuxeo.com/x/HgIz -->
-<package type="addon" name="nuxeo-aws-bedrock-connector" version="@VERSION@">
+<package type="addon" name="church-nuxeo-aws-bedrock-connector" version="@VERSION@">
   <title>Nuxeo AWS Bedrock Connector</title>
   <description>
     <p>A connector for AWS Bedrock</p>
