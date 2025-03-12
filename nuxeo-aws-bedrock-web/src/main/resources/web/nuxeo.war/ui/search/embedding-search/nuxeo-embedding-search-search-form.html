@@ -29,6 +29,7 @@
         params: {
           type: Object,
           notify: true,
+          observer: '_paramsObserver'
         },
         
         searchTerm: {
@@ -49,7 +50,16 @@
         this.set('params.embedding_automation_processor','javascript.text2embedding');
         this.set('params.k',"10");
         return true
-      }
+      },
+
+      _paramsObserver(params) {
+        if(!this.params.vector_index)
+          this.set('params.vector_index', "embedding:image");
+        if(!this.params.k)
+          this.set('params.k', 10);
+        if(!this.params.embedding_automation_processor)
+          this.set('params.embedding_automation_processor', 'javascript.text2embedding');
+      },
       
     });
   </script>

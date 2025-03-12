@@ -6,6 +6,9 @@ import org.apache.logging.log4j.Logger;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.functionscore.ScriptScoreQueryBuilder;
+import org.elasticsearch.script.Script;
+import org.elasticsearch.script.ScriptType;
 import org.json.JSONArray;
 import org.nuxeo.ecm.automation.AutomationService;
 import org.nuxeo.ecm.automation.OperationContext;
@@ -113,7 +116,7 @@ public class VectorSearchPageProvider extends ElasticSearchNxqlPageProvider {
         BoolQueryBuilder combinedQuery = QueryBuilders
                 .boolQuery();
 
-        combinedQuery = combinedQuery.must(buildKnnQuery(vector, namedParameters.get("vector_index"))).boost(1.0f);
+        combinedQuery = combinedQuery.must(buildScriptKnnQuery(vector, namedParameters.get("vector_index"))).boost(1.0f);
 
         if (searchOnAllRepositories()) {
             nxQuery.searchOnAllRepositories();
@@ -149,6 +152,22 @@ public class VectorSearchPageProvider extends ElasticSearchNxqlPageProvider {
     public DocumentModelList getEmptyResult() {
         setResultsCount(0);
         return new DocumentModelListImpl();
+    }
+
+    private ScriptScoreQueryBuilder buildScriptKnnQuery(String queryVector, String type) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("query_value", parseVector(queryVector));
+        params.put("field", type);
+        params.put("space_type", "cosinesimil");
+
+        // Construct the script for cosine similarity
+        Script script = new Script(ScriptType.INLINE, "knn", "knn_score", params);
+
+        // Build the script-based query
+        return QueryBuilders.scriptScoreQuery(
+                QueryBuilders.existsQuery(type), // Filter: Only docs with vectors
+                script
+        );
     }
 
     private QueryBuilder buildKnnQuery(String queryVector, String type) {
