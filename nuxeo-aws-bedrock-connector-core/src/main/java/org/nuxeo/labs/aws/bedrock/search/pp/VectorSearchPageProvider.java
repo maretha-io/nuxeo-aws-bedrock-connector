@@ -4,10 +4,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.query.functionscore.ScriptScoreQueryBuilder;
-import org.elasticsearch.script.Script;
-import org.elasticsearch.script.ScriptType;
 import org.json.JSONArray;
 import org.nuxeo.ecm.automation.AutomationService;
 import org.nuxeo.ecm.automation.OperationContext;
@@ -115,7 +113,7 @@ public class VectorSearchPageProvider extends ElasticSearchNxqlPageProvider {
         BoolQueryBuilder combinedQuery = QueryBuilders
                 .boolQuery();
 
-        combinedQuery = combinedQuery.must(buildKnnScriptQuery(vector, namedParameters.get("vector_index"))).boost(1.0f);
+        combinedQuery = combinedQuery.must(buildKnnQuery(vector, namedParameters.get("vector_index"))).boost(1.0f);
 
         if (searchOnAllRepositories()) {
             nxQuery.searchOnAllRepositories();
@@ -153,19 +151,15 @@ public class VectorSearchPageProvider extends ElasticSearchNxqlPageProvider {
         return new DocumentModelListImpl();
     }
 
-    private ScriptScoreQueryBuilder buildKnnScriptQuery(String queryVector, String type) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("query_vector", parseVector(queryVector));
+    private QueryBuilder buildKnnQuery(String queryVector, String type) {
+        String jsonQuery = "{\"knn\": {\n" +
+                "      \"" + type + "\": {\n" +
+                "        \"vector\": " + queryVector + ",\n" +
+                "        \"k\": 10\n" +
+                "      }\n" +
+                "    }}";
 
-        // Construct the script for cosine similarity
-        Script script = new Script(ScriptType.INLINE, "painless",
-                "cosineSimilarity(params.query_vector, '" + type + "') + 1.0", params);
-
-        // Build the script-based query
-        return QueryBuilders.scriptScoreQuery(
-                QueryBuilders.existsQuery(type), // Filter: Only docs with vectors
-                script
-        );
+        return QueryBuilders.wrapperQuery(jsonQuery);
     }
 
     private double[] parseVector(String vectorString) {

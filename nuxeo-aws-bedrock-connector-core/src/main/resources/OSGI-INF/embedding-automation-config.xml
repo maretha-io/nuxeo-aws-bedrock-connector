@@ -51,7 +51,7 @@
 
               if (!input.hasFacet('Picture')) {
                 Console.log('Not a Picture');
-                return input;
+                //return input;
               }
 
               var blob = Picture.GetView(input, {
