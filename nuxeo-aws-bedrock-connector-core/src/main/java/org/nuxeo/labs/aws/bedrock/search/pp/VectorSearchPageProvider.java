@@ -56,14 +56,14 @@ public class VectorSearchPageProvider extends ElasticSearchNxqlPageProvider {
 
         Map<String, String> namedParameters = (Map<String, String>) searchDoc.getContextData(NAMED_PARAMETERS);
         if (namedParameters == null) {
-            return super.getCurrentPage();
+            return getEmptyResult();
         }
 
         String index = namedParameters.get("vector_index");
         String vector = namedParameters.get("vector_value");
         String inputText = namedParameters.get("input_text");
         if (index == null && vector == null && inputText == null) {
-            return super.getCurrentPage();
+            return getEmptyResult();
         }
 
         // proceed with vector search implementation
@@ -104,7 +104,7 @@ public class VectorSearchPageProvider extends ElasticSearchNxqlPageProvider {
             }
         }
 
-        float minScore = Float.parseFloat(namedParameters.getOrDefault("min_score", "0.4"));
+        float minScore = Float.parseFloat(namedParameters.getOrDefault("min_score", "0.5"));
 
         if (StringUtils.isBlank(index) || StringUtils.isBlank(vector)) {
             return getEmptyResult();
@@ -116,7 +116,11 @@ public class VectorSearchPageProvider extends ElasticSearchNxqlPageProvider {
         BoolQueryBuilder combinedQuery = QueryBuilders
                 .boolQuery();
 
-        combinedQuery = combinedQuery.must(buildScriptKnnQuery(vector, namedParameters.get("vector_index"))).boost(1.0f);
+        ScriptScoreQueryBuilder scoreQuery = buildScriptKnnQuery(vector, namedParameters.get("vector_index"))
+                .setMinScore(minScore);
+        combinedQuery = combinedQuery
+                .must(scoreQuery)
+                .boost(0.5f);
 
         if (searchOnAllRepositories()) {
             nxQuery.searchOnAllRepositories();
@@ -128,7 +132,8 @@ public class VectorSearchPageProvider extends ElasticSearchNxqlPageProvider {
             nxQuery.highlight(highlightFields);
         }
 
-        combinedQuery = combinedQuery.filter(getCurrentQueryAsEsBuilder());
+        combinedQuery = combinedQuery
+                .filter(getCurrentQueryAsEsBuilder());
         nxQuery = nxQuery.esQuery(combinedQuery)
                 .fetchFromElasticsearch() // Force ES query
                 .offset((int) this.getCurrentPageOffset())
@@ -165,7 +170,7 @@ public class VectorSearchPageProvider extends ElasticSearchNxqlPageProvider {
 
         // Build the script-based query
         return QueryBuilders.scriptScoreQuery(
-                QueryBuilders.existsQuery(type), // Filter: Only docs with vectors
+                QueryBuilders.existsQuery(type).boost(0.1f), // Filter: Only docs with vectors
                 script
         );
     }

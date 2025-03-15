@@ -16,6 +16,21 @@
                  value="{{params.input_text}}"
                  autofocus>
     </nuxeo-input>
+
+    <label>Min Score</label>
+    <paper-slider
+            role="widget"
+            id="minScoreSlider"
+            label="Minimum Score"
+            type="number"
+            min="0"
+            max="1"
+            step="0.1"
+            snaps
+            value="{{params.min_score}}"
+            placeholder="0.8"
+            pin>
+    </paper-slider>
     
     
   </template>
@@ -59,6 +74,8 @@
           this.set('params.k', 10);
         if(!this.params.embedding_automation_processor)
           this.set('params.embedding_automation_processor', 'javascript.text2embedding');
+        if(!this.params.min_score)
+          this.set('params.min_score', 0.8);
       },
       
     });
