@@ -7,7 +7,7 @@
   </parent>
   <groupId>org.nuxeo.labs.aws.bedrock</groupId>
   <artifactId>nuxeo-aws-bedrock-connector-parent</artifactId>
-  <version>1.7-CHURCH-SNAPSHOT</version>
+  <version>1.8-CHURCH-SNAPSHOT</version>
   <name>Nuxeo aws bedrock connector parent</name>
   <description/>
   <packaging>pom</packaging>
