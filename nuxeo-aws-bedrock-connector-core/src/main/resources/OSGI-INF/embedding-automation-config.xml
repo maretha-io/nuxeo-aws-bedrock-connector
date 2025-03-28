@@ -86,7 +86,7 @@
 
               var responseBlob = Bedrock.Invoke(null, {
                 'jsonPayload': JSON.stringify(payload),
-                'modelName': 'anthropic.claude-3-5-sonnet-20240620-v1:0',
+                'modelName': 'arn:aws:bedrock:us-east-1:198956318666:inference-profile/us.anthropic.claude-3-7-sonnet-20250219-v1:0',
                 'useCache': true
               });
 
